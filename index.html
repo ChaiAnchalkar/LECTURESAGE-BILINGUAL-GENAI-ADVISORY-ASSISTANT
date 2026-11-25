@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LectureSage — Multimodal Course Companion & Socratic Exam Prep</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon">🎓</span>
+          <div>
+            <h1>LectureSage</h1>
+            <p class="tagline">Socratic Course Copilot</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Course Material Card -->
+      <div class="sidebar-section">
+        <h3>Course Material</h3>
+        <div class="status-card" id="statusCard">
+          <div class="status-item">
+            <span class="label">Indexed Slides:</span>
+            <span class="value" id="totalSlides">0</span>
+          </div>
+          <div class="status-item">
+            <span class="label">Current Source:</span>
+            <span class="value truncate" id="sourceName">None</span>
+          </div>
+          <div class="status-item">
+            <span class="label">LLM Engine:</span>
+            <span class="value badge-provider" id="llmEngine">Checking...</span>
+          </div>
+        </div>
+
+        <button class="btn btn-secondary w-full" id="btnLoadSample">
+          <span>⚡</span> Load CS 101 Sample Deck
+        </button>
+
+        <div class="upload-box mt-3">
+          <label for="fileUpload" class="file-label">
+            <span>📄</span> Upload Slides (.pdf, .txt, .md)
+          </label>
+          <input type="file" id="fileUpload" accept=".pdf,.txt,.md" style="display: none;">
+          <p class="upload-hint" id="uploadHint">Supports lecture slides and notes</p>
+        </div>
+      </div>
+
+      <!-- API Key Settings -->
+      <div class="sidebar-section">
+        <h3>Model Configuration</h3>
+        <button class="btn btn-ghost w-full" id="btnOpenConfig">
+          <span>⚙️</span> Configure API Key
+        </button>
+      </div>
+
+      <div class="sidebar-footer">
+        <p>GenAI University Project Prototype</p>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Navigation Tabs -->
+      <header class="top-nav">
+        <nav class="nav-tabs">
+          <button class="tab-btn active" data-tab="tab-qa">
+            <span>💬</span> Grounded Slide Q&A
+          </button>
+          <button class="tab-btn" data-tab="tab-flashcards">
+            <span>📇</span> Socratic Flashcards
+          </button>
+          <button class="tab-btn" data-tab="tab-quiz">
+            <span>🎯</span> "Grill Me" Exam Prep
+          </button>
+        </nav>
+      </header>
+
+      <!-- TAB 1: Grounded Q&A -->
+      <section class="tab-pane active" id="tab-qa">
+        <div class="qa-container">
+          <div class="mode-selector">
+            <label class="mode-toggle">
+              <input type="radio" name="qa-mode" value="direct" checked>
+              <span class="toggle-card">
+                <strong>Factual Mode</strong>
+                <small>Direct answers with verified slide citations</small>
+              </span>
+            </label>
+            <label class="mode-toggle">
+              <input type="radio" name="qa-mode" value="socratic">
+              <span class="toggle-card">
+                <strong>Socratic Mode</strong>
+                <small>Guiding questions that coach your intuition</small>
+              </span>
+            </label>
+          </div>
+
+          <div class="chat-feed" id="chatFeed">
+            <div class="message-card system">
+              <div class="avatar">🤖</div>
+              <div class="bubble">
+                <p>Hello! I am your <strong>LectureSage</strong> course assistant. Ask me any conceptual question about the course slides, or toggle to <strong>Socratic Mode</strong> to test your understanding!</p>
+                <div class="quick-prompts">
+                  <button class="chip" data-prompt="What is the difference between supervised and unsupervised learning?">Difference between Supervised vs Unsupervised?</button>
+                  <button class="chip" data-prompt="Why does a high learning rate cause gradient descent to diverge?">Why does high learning rate cause divergence?</button>
+                  <button class="chip" data-prompt="Explain L1 vs L2 regularization and how they prevent overfitting.">L1 vs L2 Regularization?</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input bar -->
+          <form class="chat-input-bar" id="chatForm">
+            <input type="text" id="queryInput" placeholder="Ask a question about lecture concepts..." required autocomplete="off">
+            <button type="submit" class="btn btn-primary" id="btnSend">
+              <span>Ask</span>
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- TAB 2: Flashcards -->
+      <section class="tab-pane" id="tab-flashcards">
+        <div class="flashcard-container">
+          <div class="flashcard-toolbar">
+            <div>
+              <h2>Course Concept Deck</h2>
+              <p>Generated dynamically from your indexed lecture notes</p>
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-secondary" id="btnGenCards">🔄 Regenerate Deck</button>
+              <a class="btn btn-primary" href="/api/export-anki" download="lecturesage_anki_deck.txt">📥 Export to Anki</a>
+            </div>
+          </div>
+
+          <!-- Flip Card Widget -->
+          <div class="card-viewer-wrap">
+            <div class="flip-card" id="flipCard">
+              <div class="flip-card-inner">
+                <!-- Front -->
+                <div class="flip-card-front">
+                  <div class="card-meta">
+                    <span class="badge" id="cardDifficulty">Medium</span>
+                    <span class="slide-tag" id="cardSlideRef">Slide 2</span>
+                  </div>
+                  <div class="card-content">
+                    <p class="card-prompt" id="cardFrontText">Loading flashcard...</p>
+                  </div>
+                  <div class="card-hint">Click card to reveal answer ↻</div>
+                </div>
+                <!-- Back -->
+                <div class="flip-card-back">
+                  <div class="card-meta">
+                    <span class="badge badge-success">Answer</span>
+                    <span class="slide-tag" id="cardSlideRefBack">Slide 2</span>
+                  </div>
+                  <div class="card-content">
+                    <p class="card-answer" id="cardBackText">Loading answer...</p>
+                  </div>
+                  <div class="card-hint">Click card to flip back ↻</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Controls -->
+            <div class="card-controls">
+              <button class="btn btn-secondary" id="btnPrevCard">‹ Previous</button>
+              <span class="card-counter" id="cardCounter">1 / 4</span>
+              <button class="btn btn-secondary" id="btnNextCard">Next ›</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: "Grill Me" Exam Prep -->
+      <section class="tab-pane" id="tab-quiz">
+        <div class="quiz-container">
+          <div class="quiz-header">
+            <h2>Socratic "Grill Me" Exam Prep</h2>
+            <p>Answer conceptual questions in your own words. The LLM-as-a-Judge will evaluate your understanding using the lecture slides as the official grading rubric.</p>
+          </div>
+
+          <div class="quiz-question-box">
+            <div class="question-badge">Practice Question</div>
+            <h3 id="quizQuestionText">Explain the role of the Learning Rate (alpha) in Gradient Descent, and describe what happens if it is set too high or too low.</h3>
+            <p class="source-hint">Ground truth reference: <span id="quizReferenceSlide">Slide 3: Loss Functions & Gradient Descent</span></p>
+          </div>
+
+          <div class="quiz-answer-box">
+            <label for="studentAnswerInput"><strong>Your Answer:</strong></label>
+            <textarea id="studentAnswerInput" rows="5" placeholder="Type your explanation here. Be thorough—mention specific consequences and mechanisms..."></textarea>
+            <div class="quiz-actions">
+              <button class="btn btn-primary" id="btnSubmitQuiz">
+                <span>Evaluate with Rubric</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Evaluation Card -->
+          <div class="evaluation-card hidden" id="evaluationCard">
+            <div class="eval-header">
+              <div class="score-pill">
+                <span class="score-num" id="evalScore">4</span>
+                <span class="score-denom">/ 5</span>
+              </div>
+              <div>
+                <h4 id="evalVerdict">Good Understanding</h4>
+                <p class="eval-sub" id="evalReference">Graded against Slide 3</p>
+              </div>
+            </div>
+
+            <div class="eval-grid">
+              <div class="eval-col strengths">
+                <h5>✅ Concept Strengths</h5>
+                <ul id="evalStrengths"></ul>
+              </div>
+              <div class="eval-col improvements">
+                <h5>💡 Areas for Exam Improvement</h5>
+                <ul id="evalImprovements"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- API Config Modal -->
+  <div class="modal-overlay hidden" id="configModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Model API Configuration</h3>
+        <button class="close-btn" id="btnCloseConfig">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          LectureSage has a built-in <strong>Intelligent Offline Simulator</strong> so it works completely free with zero keys. To connect a live LLM, enter your key below:
+        </p>
+        <div class="form-group">
+          <label>Provider:</label>
+          <select id="apiProviderSelect">
+            <option value="gemini">Google Gemini API (Recommended)</option>
+            <option value="openai">OpenAI API (GPT-4o-mini)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>API Key:</label>
+          <input type="password" id="apiKeyInput" placeholder="AIzaSy... or sk-...">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCancelConfig">Cancel</button>
+        <button class="btn btn-primary" id="btnSaveConfig">Save Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/main.js"></script>
+</body>
+</html>

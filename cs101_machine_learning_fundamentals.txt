@@ -1,0 +1,104 @@
+--- Slide 1: CS 101 - Introduction to Machine Learning ---
+Welcome to CS 101: Foundations of Machine Learning.
+Instructor: Dr. Sarah Lin (Department of Computer Science)
+Prerequisites: Linear Algebra (MATH 220), Calculus III (MATH 230), and Python Programming.
+Course Objectives:
+• Understand fundamental algorithms for classification, regression, and clustering.
+• Master gradient-based optimization and cost functions.
+• Learn practical techniques to diagnose and prevent overfitting in real-world datasets.
+Grading Policy: 30% Homework Assignments, 30% Midterm Exam, 40% Final Capstone Project.
+
+--- Slide 2: Supervised vs Unsupervised Learning ---
+Definition: Machine Learning algorithms build mathematical models from training data to make predictions or decisions without being explicitly programmed.
+1. Supervised Learning:
+   • The training dataset consists of labeled input-output pairs (X, y).
+   • Objective: Learn a mapping function f: X -> y.
+   • Common Tasks: Regression (predicting continuous values like house prices) and Classification (predicting discrete class labels like spam vs. non-spam).
+   • Examples: Linear Regression, Logistic Regression, Support Vector Machines (SVM), Random Forests.
+2. Unsupervised Learning:
+   • The training dataset contains only input features X with no corresponding target labels y.
+   • Objective: Discover latent structures, groupings, or probability densities within data.
+   • Examples: K-Means Clustering, Principal Component Analysis (PCA), Hierarchical Clustering.
+
+--- Slide 3: Loss Functions & Gradient Descent Optimization ---
+How do models learn? By minimizing an objective loss function J(theta).
+1. Mean Squared Error (MSE) for Regression:
+   • J(theta) = (1 / 2m) * sum((h_theta(x^(i)) - y^(i))^2)
+2. Gradient Descent Algorithm:
+   • Iterative optimization algorithm for finding the local minimum of a differentiable function.
+   • Parameter Update Rule: theta_j := theta_j - alpha * (d/d_theta_j) J(theta)
+   • Where alpha is the LEARNING RATE:
+     - If alpha is too small: Convergence is painfully slow and can get stuck in plateaus.
+     - If alpha is too large: Gradient descent can overshoot the minimum, oscillate wildly, or diverge.
+3. Batch vs. Stochastic vs. Mini-batch Gradient Descent:
+   • Batch GD computes gradient over the entire dataset (stable but memory intensive).
+   • Stochastic GD (SGD) updates parameters per individual example (fast, noisy, escapes saddle points).
+   • Mini-batch GD calculates gradients over batches of size 32-256 (standard in modern deep learning).
+
+--- Slide 4: Overfitting, Underfitting & Bias-Variance Tradeoff ---
+The fundamental challenge in machine learning is generalization to unseen test data.
+1. Underfitting (High Bias):
+   • The model is too simple to capture underlying data trends (e.g., fitting a straight line to a quadratic curve).
+   • High training error and high test error.
+   • Remedies: Increase model capacity, add polynomial features, decrease regularization.
+2. Overfitting (High Variance):
+   • The model fits training data too closely, memorizing random noise rather than generalizable signals.
+   • Very low training error, but high validation/test error.
+   • Remedies: Gather more training data, feature selection, Early Stopping, Regularization.
+3. Regularization Techniques:
+   • L2 Regularization (Ridge): Adds penalty term lambda * sum(theta_j^2). Shrinks weights smoothly toward zero.
+   • L1 Regularization (Lasso): Adds penalty term lambda * sum(|theta_j|). Enforces sparsity (drives coefficients to exactly zero, useful for feature selection).
+
+--- Slide 5: Cross-Validation & Performance Metrics ---
+Never evaluate final model performance solely on training data!
+1. Train / Validation / Test Split:
+   • Typical ratios: 70% Train, 15% Validation (for hyperparameter tuning), 15% Test (final unbiased evaluation).
+2. K-Fold Cross-Validation:
+   • Partition the dataset into K equal-sized folds (typically K=5 or K=10).
+   • Train on K-1 folds, validate on the remaining fold. Repeat K times and average the validation scores.
+   • Advantage: Reduces variance in performance estimates on smaller datasets.
+3. Classification Metrics:
+   • Accuracy: (TP + TN) / Total. Caution: Highly misleading on imbalanced datasets.
+   • Precision: TP / (TP + FP) — "Of all predicted positives, how many were truly positive?" (Crucial for spam detection).
+   • Recall (Sensitivity): TP / (TP + FN) — "Of all actual positives, how many did we catch?" (Crucial for disease screening).
+   • F1-Score: Harmonic mean of Precision and Recall: 2 * (Precision * Recall) / (Precision + Recall).
+
+--- Slide 6: Logistic Regression & Classification ---
+Despite its name, Logistic Regression is an algorithm used for binary classification.
+1. The Hypothesis Function:
+   • h_theta(x) = g(theta^T * x), where g(z) is the Sigmoid (Logistic) function:
+   • g(z) = 1 / (1 + e^(-z))
+   • Output is bounded between 0 and 1: represents P(y = 1 | x; theta).
+2. Decision Boundary:
+   • Predict y = 1 if h_theta(x) >= 0.5 (which corresponds to theta^T * x >= 0).
+   • Predict y = 0 if h_theta(x) < 0.5.
+3. Binary Cross-Entropy Loss (Log Loss):
+   • Cost(h_theta(x), y) = -y * log(h_theta(x)) - (1 - y) * log(1 - h_theta(x)).
+   • Guarantees a convex optimization landscape (no local minima, unlike MSE applied to sigmoid).
+
+--- Slide 7: Introduction to Neural Networks ---
+Biological inspiration meets linear algebra.
+1. The Artificial Neuron (Perceptron):
+   • Takes multiple inputs x_1, x_2, ..., x_n, multiplies by weights w_i, adds bias b, and applies an activation function:
+   • z = sum(w_i * x_i) + b = W^T * x + b
+   • a = sigma(z)
+2. Multi-Layer Perceptron (MLP):
+   • Input Layer -> Hidden Layer(s) -> Output Layer.
+   • Universal Approximation Theorem: A feedforward neural network with a single hidden layer containing finite neurons can approximate any continuous function, provided the activation function is non-linear.
+3. Forward Propagation vs. Backpropagation:
+   • Forward Pass: Computes layer-by-layer activations to arrive at final output prediction y_hat.
+   • Backward Pass (Backprop): Applies the Calculus Chain Rule backwards from the loss function to compute partial derivatives (dJ/dW, dJ/db) for every layer.
+
+--- Slide 8: Activation Functions in Deep Learning ---
+Why do we need non-linear activations? Without them, a multi-layer network collapses mathematically into a single linear regression!
+1. Sigmoid:
+   • sigma(z) = 1 / (1 + e^(-z)).
+   • Drawback: Vanishing Gradient Problem! Gradients saturate near 0 or 1, causing weight updates in early layers to stall.
+2. Hyperbolic Tangent (Tanh):
+   • tanh(z) = (e^z - e^(-z)) / (e^z + e^(-z)).
+   • Zero-centered (-1 to +1), trains faster than sigmoid, but still suffers from vanishing gradients for large |z|.
+3. Rectified Linear Unit (ReLU):
+   • f(z) = max(0, z).
+   • Standard default for modern hidden layers.
+   • Advantages: Computationally trivial (no exponentials), prevents vanishing gradient for positive inputs.
+   • Pitfall: "Dying ReLU" problem if neurons get stuck with negative inputs (gradient is 0). Leaky ReLU addresses this with f(z) = max(0.01z, z).
